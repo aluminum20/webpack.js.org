@@ -8,29 +8,29 @@ related:
     url: https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
 ---
 
-Originally, chunks (and modules imported inside them) were connected by a parent-child relationship in the internal webpack graph. The `CommonsChunkPlugin` was used to avoid duplicated dependencies across them, but further optimizations where not possible
+最初，`chunk` (以及在其中导入的模块)是通过内部webpack图的父子关系连接的。`CommonsChunkPlugin` 用于避免它们之间的重复依赖关系，但没有办法再优化了。
 
-Since version 4 the `CommonsChunkPlugin` was removed in favor of `optimization.splitChunks` and `optimization.runtimeChunk` options. Here is how the new flow works.
+自从第4版以来， `CommonsChunkPlugin` 被删除，取而代之的是 `optimization.splitChunks`和 `optimization.runtimeChunk` 。以下介绍了这些新工具是如何使用的。
 
 
 ## Defaults
 
-Out of the box `SplitChunksPlugin` should work great for most users.
+开箱即用的 `SplitChunksPlugin` 应该对大多数用户都很有用。
 
-By default it only affects on-demand chunks because changing initial chunks would affect the script tags the HTML file should include to run the project.
+默认情况下，它只影响on-demand chunks，因为更改初始块将影响HTML文件应该包含的用于运行项目的脚本标记。
 
-webpack will automatically split chunks based on these conditions:
+在以下条件下，webpack 会自动 split chunks。
 
-* New chunk can be shared OR modules are from the `node_modules` folder
-* New chunk would be bigger than 30kb (before min+gz)
+* New chunk can be shared OR modules are from the `node_modules` 文件夹 可以共享新块，或者模块来自“node_modules”
+* (在min+gz之前)大于30kb的新 chunk 
 * Maximum number of parallel requests when loading chunks on demand would be lower or equal to 5
 * Maximum number of parallel requests at initial page load would be lower or equal to 3
 
-When trying to fulfill the last two conditions, bigger chunks are preferred.
+当试图满足最后两个条件时，大的`chunk`优先级更高。
 
-Let's take a look at some examples.
+让我们看一些例子
 
-### Defaults: Example 1
+### Defaults: 例1
 
 ``` js
 // index.js
@@ -46,14 +46,14 @@ import "react";
 // ...
 ```
 
-**Result:** A separate chunk would be created containing `react`. At the import call this chunk is loaded in parallel to the original chunk containing `./a`.
+**结果:** 一个包含`react`的`chunk`将被分割出来。 在`import call`中，这个`chunk`与包含`./a`的原始块并行加载。
 
-Why:
+为什么:
 
-* Condition 1: The chunk contains modules from `node_modules`
-* Condition 2: `react` is bigger than 30kb
-* Condition 3: Number of parallel requests at the import call is 2
-* Condition 4: Doesn't affect request at initial page load
+* 条件 1: 这个`chunk`包含来自`node_modules`的module
+* 条件 2: `react` 大于30kb
+* 条件 3: `import call`的并行请求的数量是2
+* 条件 4: 在初始页面加载时不影响请求
 
 What's the reasoning behind this? `react` probably won't change as often as your application code. By moving it into a separate chunk this chunk can be cached separately from your app code (assuming you are using chunkhash, records, Cache-Control or other long term cache approach).
 
@@ -62,7 +62,7 @@ What's the reasoning behind this? `react` probably won't change as often as your
 ``` js
 // entry.js
 
-// dynamically import a.js and b.js
+// 动态地 import a.js 和 b.js
 import("./a");
 import("./b");
 ```
@@ -82,9 +82,9 @@ import "./more-helpers"; // more-helpers is also 40kb in size
 // ...
 ```
 
-**Result:** A separate chunk would be created containing `./helpers` and all dependencies of it. At the import calls this chunk is loaded in parallel to the original chunks.
+**结果:** 一个包含 `./helpers` 和所有依赖的分离的块将被创建。At the import calls this chunk is loaded in parallel to the original chunks.
 
-Why:
+为什么:
 
 * Condition 1: The chunk is shared between both import calls
 * Condition 2: `helpers` is bigger than 30kb
@@ -94,7 +94,7 @@ Why:
 Putting the content of `helpers` into each chunk will result into its code being downloaded twice. By using a separate chunk this will only happen once. We pay the cost of an additional request, which could be considered a tradeoff. That's why there is a minimum size of 30kb.
 
 
-## Configuration
+## 配置
 
 For developers that want to have more control over this functionality, webpack provides a set of options to better fit your needs.
 
@@ -239,6 +239,6 @@ W> This might result in a large chunk containing all external packages. It is re
 
 ## `optimization.runtimeChunk`
 
-Setting `optimization.runtimeChunk` to `true` adds an additonal chunk to each entrypoint containing only the runtime.
+把 `optimization.runtimeChunk` 的值设为 `true` adds an additonal chunk to each entrypoint containing only the runtime.
 
 The value `single` instead creates a runtime file to be shared for all generated chunks.
